@@ -1,376 +1,184 @@
-let root = {
-  name: "A",
-  info: "tst",
-  children: [
-    {
-      name: "A1",
-      children: [
-        { name: "A12" },
-        { name: "A13" },
-        { name: "A14" },
-        { name: "A15" },
-        { name: "A16" },
-      ],
-    },
-    {
-      name: "A2",
-      children: [
-        { name: "A21" },
-        {
-          name: "A22",
-          children: [
-            { name: "A221" },
-            { name: "A222" },
-            { name: "A223" },
-            { name: "A224" },
-          ],
-        },
-        { name: "A23" },
-        { name: "A24" },
-        { name: "A25" },
-      ],
-    },
-    {
-      name: "A3",
-      children: [
-        {
-          name: "A31",
-          children: [
-            { name: "A311" },
-            { name: "A312" },
-            { name: "A313" },
-            { name: "A314" },
-            { name: "A315" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "A1",
-      children: [
-        { name: "A12" },
-        { name: "A13" },
-        { name: "A14" },
-        { name: "A15" },
-        { name: "A16" },
-      ],
-    },
-    {
-      name: "A2",
-      children: [
-        { name: "A21" },
-        {
-          name: "A22",
-          children: [
-            { name: "A221" },
-            { name: "A222" },
-            { name: "A223" },
-            { name: "A224" },
-          ],
-        },
-        { name: "A23" },
-        { name: "A24" },
-        { name: "A25" },
-      ],
-    },
-    {
-      name: "A3",
-      children: [
-        {
-          name: "A31",
-          children: [
-            { name: "A311" },
-            { name: "A312" },
-            { name: "A313" },
-            { name: "A314" },
-            { name: "A315" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "A1",
-      children: [
-        { name: "A12" },
-        { name: "A13" },
-        { name: "A14" },
-        { name: "A15" },
-        { name: "A16" },
-      ],
-    },
-    {
-      name: "A2",
-      children: [
-        { name: "A21" },
-        {
-          name: "A22",
-          children: [
-            { name: "A221" },
-            { name: "A222" },
-            { name: "A223" },
-            { name: "A224" },
-          ],
-        },
-        { name: "A23" },
-        { name: "A24" },
-        { name: "A25" },
-      ],
-    },
-    {
-      name: "A3",
-      children: [
-        {
-          name: "A31",
-          children: [
-            { name: "A311" },
-            { name: "A312" },
-            { name: "A313" },
-            { name: "A314" },
-            { name: "A315" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "A1",
-      children: [
-        { name: "matanga" },
-        { name: "dijo" },
-        { name: "la " },
-        { name: "changa" },
-        { name: "A16" },
-      ],
-    },
-    {
-      name: "A2",
-      children: [
-        { name: "A21" },
-        {
-          name: "A22",
-          children: [
-            { name: "A221" },
-            { name: "A222" },
-            { name: "A223" },
-            { name: "A224" },
-          ],
-        },
-        { name: "A23" },
-        { name: "A24" },
-        { name: "A25" },
-      ],
-    },
-    {
-      name: "A3",
-      children: [
-        {
-          name: "A31",
-          children: [
-            { name: "A311" },
-            { name: "A312" },
-            { name: "A313" },
-            { name: "A314" },
-            { name: "A315" },
-          ],
-        },
-      ],
-    },
-  ],
+const width = window.innerWidth,
+  height = window.innerHeight,
+  maxRadius = Math.min(width, height) / 2 - 5;
+
+const formatNumber = d3.format(",d");
+
+const x = d3
+  .scaleLinear()
+  .range([0, 2 * Math.PI])
+  .clamp(true);
+
+const y = d3.scaleSqrt().range([maxRadius * 0.1, maxRadius]);
+
+const color = d3.scaleOrdinal(d3.schemeCategory20);
+
+const partition = d3.partition();
+
+const arc = d3
+  .arc()
+  .startAngle((d) => x(d.x0))
+  .endAngle((d) => x(d.x1))
+  .innerRadius((d) => Math.max(0, y(d.y0)))
+  .outerRadius((d) => Math.max(0, y(d.y1)));
+
+const middleArcLine = (d) => {
+  const halfPi = Math.PI / 2;
+  const angles = [x(d.x0) - halfPi, x(d.x1) - halfPi];
+  const r = Math.max(0, (y(d.y0) + y(d.y1)) / 2);
+
+  const middleAngle = (angles[1] + angles[0]) / 2;
+  const invertDirection = middleAngle > 0 && middleAngle < Math.PI; // On lower quadrants write text ccw
+  if (invertDirection) {
+    angles.reverse();
+  }
+
+  const path = d3.path();
+  path.arc(0, 0, r, angles[0], angles[1], invertDirection);
+  return path.toString();
 };
 
-// d3.csv("/../../Exports-2019.csv", function (data) {
-//   data.HS2ID = +data.HS2ID;
-//   data.HS4ID = +data.HS4ID;
-//   data.SectionID = +data.SectionID;
-//   data.TradeValue = +data.TradeValue;
-//   data.Year = +data.Year;
-//   console.log("datos :", data);
-//   var dataMap = data.reduce(function (map, node) {
-//     map[node.HS4] = node;
-//     return map;
-//   }, {});
-// });
+const textFits = (d) => {
+  const CHAR_SPACE = 6;
 
-// async function sample() {
-//   const data = await d3.csv("/../../Exports-2019.csv");
+  const deltaAngle = x(d.x1) - x(d.x0);
+  const r = Math.max(0, (y(d.y0) + y(d.y1)) / 2);
+  const perimeter = r * deltaAngle;
+  return d.data.key.length * CHAR_SPACE < perimeter;
+  
+  
+};
 
-//   uncount = (data, accessor) =>
-//     data.reduce((arr, item) => {
-//       const count = accessor(item);
-//       for (let i = 0; i < count; i++) {
-//         arr.push({
-//           ...item,
-//         });
-//       }
-//       return arr;
-//     }, []);
-// }
+const svg = d3
+  .select("body")
+  .append("svg")
+  .style("width", "100vw")
+  .style("height", "100vh")
+  .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
+  .on("click", () => focusOn()); // Reset zoom on canvas click
 
-// d3.csv("/../../Exports-2019.csv", function (error, data) {
-// 	console.log("data: ",data);
-// 	if (error) {
-//     console.error(error);
-//   }
-//   // Convertimos los campos numericos a numero
-//   data.forEach(function (d) {
-//     d.HS2ID = +d.HS2ID;
-//     d.HS4ID = +d.HS4ID;
-//     d.SectionID = +d.SectionID;
-//     d.TradeValue = +d.TradeValue;
-//     d.Year = +d.Year;
-//   });
-
-// 	var dataMap = data.reduce(function (map, node){
-// 		map[node.HS4] = node;
-// 		return map;
-// 	}, {});
-
-// 	var treeData = [];
-// 	data.forEach(function(node) {
-// 		var parent = dataMap[node.HS2];
-// 		if(parent){
-// 			(parent.children || (parent.children = []))
-// 			.push(node);
-// 		} else {
-// 			treeData.push(node);
-// 		}
-// 	});
-
-// 	root = treeData[0];
-// 	createRadialTree(root);
-
-// });
-
-async function createRadialTree(input) {
-  let height = 768;
-  let width = 1366;
-  // /../../Exports-2019.csv
-  // const datos = await d3.csv("/../../prueba.csv", (d) => {
-  //   if(d.HS2 == "null"){d.HS2 = null;}
-  //   return {
-  //     HS2: d.HS2,
-  //     HS2ID: +d.HS2ID,
-  //     HS4: d.HS4,
-  //     HS4ID: +d.HS4ID,
-  //     Section: d.Section,
-  //     SectionID: +d.SectionID,
-  //     TradeValue: +d.TradeValue,
-  //     Year: +d.Year
-  //   };
-  // });
-  // console.log(datos);
-
-  // const dataMap = datos.reduce((arr,item) => {
-  //   arr[item.HS4] = item;
-  //   return arr;
-  // });
-  // console.log(dataMap);
-  // var arbol = [];
-  // datos.forEach(node => {
-  //   console.log(dataMap[node.HS2]);
-  //   var parent = dataMap[node.HS2];
-  //   if(parent){
-  //     (parent.children || (parent.children = []))
-  //     .push(node);
-  //   } else {
-  //     arbol.push(node);
-  //   }
-  // });
-  // console.log(arbol[0]);
-  // const raiz = arbol[0];
-
-  d3.csv("/../../prueba.csv").then(function (flatData) {
-    flatData.forEach(function (d) {
-      if (d.HS2 == "null") {
-        d.HS2 = null;
-      }
-    });
-    var collections = d3
-      .stratify()
-      .id(function (d) {
-        return d.HS4;
-      })
-      .parentId(function (d) {
-        return d.HS2;
-      })(flatData);
-
-      collections.each(function (d) {
-      d.name = d.id;
-    });
-    console.log(collections);
-//-------------------------
-    let svg = d3
-      .select("body")
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-    let diameter = height * 0.75;
-    let radius = diameter / 2;
-
-    let tree = d3
-      .tree()
-      .size([2 * Math.PI, radius])
-      .separation(function (a, b) {
-        return (a.parent == b.parent ? 1 : 2) / a.depth;
-      });
-
-    let data = d3.hierarchy(collections, function(d){
-      return d.children;
-    });
-
-    let treeData = tree(data);
-
-    let nodes = treeData.descendants();
-    let links = treeData.links();
-
-    let graphGroup = svg
-      .append("g")
-      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-    graphGroup
-      .selectAll(".link")
-      .data(links)
-      .join("path")
-      .attr("class", "link")
-      .attr(
-        "d",
-        d3
-          .linkRadial()
-          .angle((d) => d.x)
-          .radius((d) => d.y)
-      );
-
-    let node = graphGroup
-      .selectAll(".node")
-      .data(nodes)
-      .join("g")
-      .attr("class", "node")
-      .attr("transform", function (d) {
-        return `rotate(${(d.x * 180) / Math.PI - 90})` + `translate(${d.y}, 0)`;
-      });
-
-    node.append("circle").attr("r", 1);
-
-    node
-      .append("text")
-      .attr("font-family", "sans-serif")
-      .attr("font-size", 12)
-      .attr("dx", function (d) {
-        return d.x < Math.PI ? 8 : -8;
-      })
-      .attr("dy", ".31em")
-      .attr("text-anchor", function (d) {
-        return d.x < Math.PI ? "start" : "end";
-      })
-      .attr("transform", function (d) {
-        return d.x < Math.PI ? null : "rotate(180)";
-      })
-      .text(function (d) {
-        return d.data.name;
-      });
+d3.csv("/../../Exports-2019.csv", (root) => {
+  root.forEach(function (d) {
+    d.TradeValue = +d.TradeValue;
   });
+  var nest = d3
+    .nest()
+    .key(function (d) {
+      return d.HS2;
+    })
+    .key(function (d) {
+      return d.HS4;
+    })
+    .rollup(function (d) {
+      return d3.sum(d, function (d) {
+        return d.TradeValue;
+      });
+    });
 
-  //-------------------------
+  var treemap = d3.treemap().size([width, height]).padding(1).round(true);
+  console.log(root);
+  root = d3
+    .hierarchy({key: "Exportaciones", values: nest.entries(root) }, function (d) {
+      return d.values;
+    })
+    .sum(function (d) {
+      return d.value;
+    })
+    .sort(function (a, b) {
+      return b.value - a.value;
+    });
+  treemap(root);
+
+  console.log(root);
+  const slice = svg.selectAll("g.slice").data(partition(root).descendants());
+
+  slice.exit().remove();
+
+  const newSlice = slice
+    .enter()
+    .append("g")
+    .attr("class", "slice")
+    .on("click", (d) => {
+      d3.event.stopPropagation();
+      focusOn(d);
+    });
+
+  newSlice
+    .append("title")
+    .text((d) => d.data.key + "\n" + formatNumber(d.value));
+
+  newSlice
+    .append("path")
+    .attr("class", "main-arc")
+    .style("fill", (d) => color((d.children ? d : d.parent).data.key))
+    .attr("d", arc);
+
+  newSlice
+    .append("path")
+    .attr("class", "hidden-arc")
+    .attr("id", (_, i) => `hiddenArc${i}`)
+    .attr("d", middleArcLine);
+
+  const text = newSlice
+    .append("text")
+    .attr("display", (d) => (textFits(d) ? null : "none"));
+
+  // Add white contour
+  text
+    .append("textPath")
+    .attr("startOffset", "50%")
+    .attr("xlink:href", (_, i) => `#hiddenArc${i}`)
+    .text((d) => d.data.key)
+    .style("fill", "none")
+    .style("stroke", "#fff")
+    .style("stroke-width", 5)
+    .style("stroke-linejoin", "round");
+
+  text
+    .append("textPath")
+    .attr("startOffset", "50%")
+    .attr("xlink:href", (_, i) => `#hiddenArc${i}`)
+    .text((d) => d.data.key);
+});
+
+function focusOn(d = { x0: 0, x1: 1, y0: 0, y1: 1 }) {
+  // Reset to top-level if no data point specified
+
+  const transition = svg
+    .transition()
+    .duration(750)
+    .tween("scale", () => {
+      const xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+        yd = d3.interpolate(y.domain(), [d.y0, 1]);
+      return (t) => {
+        x.domain(xd(t));
+        y.domain(yd(t));
+      };
+    });
+
+  transition.selectAll("path.main-arc").attrTween("d", (d) => () => arc(d));
+
+  transition
+    .selectAll("path.hidden-arc")
+    .attrTween("d", (d) => () => middleArcLine(d));
+
+  transition
+    .selectAll("text")
+    .attrTween("display", (d) => () => textFits(d) ? null : "none");
+
+  moveStackToFront(d);
+
+  //
+
+  function moveStackToFront(elD) {
+    svg
+      .selectAll(".slice")
+      .filter((d) => d === elD)
+      .each(function (d) {
+        this.parentNode.appendChild(this);
+        if (d.parent) {
+          moveStackToFront(d.parent);
+        }
+      });
+  }
 }
-
-createRadialTree(root);

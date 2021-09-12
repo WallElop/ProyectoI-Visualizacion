@@ -9,18 +9,33 @@ https://stackoverflow.com/questions/59783070/d3-v5-radial-tree-cluster
 
 <head>
     <title>D3.js Radial Tree Example</title>
-    <script src="https://d3js.org/d3.v6.min.js"></script>
     <style>
-        svg {
-            border: solid 1px #ccc;
+        body {
+            font-family: Sans-serif;
+            font-size: 11px;
         }
 
-        .link {
+        .slice {
+            cursor: pointer;
+        }
+
+        .slice .main-arc {
+            stroke: #fff;
+            stroke-width: 1px;
+        }
+
+        .slice .hidden-arc {
             fill: none;
-            stroke: #ccc;
-            stroke-width: 1.5px;
+        }
+
+        .slice text {
+            pointer-events: none;
+            dominant-baseline: middle;
+            text-anchor: middle;
         }
     </style>
+
+    <script src='https://d3js.org/d3.v4.min.js'></script>
 </head>
 
 <body>
