@@ -1,11 +1,12 @@
 import plotly.express as px
-# import plotly.graph_objects as go
 import pandas as pd
 from scipy.ndimage.measurements import label
 
 def icicleID():
+
     df = pd.read_csv("C:\\Users\\wEDOw\\Documents\\GitHub\\ProyectoI-Visualizacion\\Exports-2019---Click-to-Select-a-Product.csv")
     df = df.assign(centro="Exportanciones")
+
     fig = px.icicle(
         df,
         path=['centro','Section','HS2','HS4', 'TradeValue'],
@@ -15,4 +16,14 @@ def icicleID():
         title="Exportaciones, Costa Rica, 2019",
         color_continuous_scale='blugrn',
     )
-    fig.show()      
+
+    fig.update_layout(
+        font_family= 'Arial',
+        font_size = 20,
+        title_font_color = 'BLACK' ,
+        title_xanchor='auto',
+    )
+    fig.show()
+  
+
+
