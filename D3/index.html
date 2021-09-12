@@ -1,28 +1,42 @@
-<!-- Code adapted from
-https://observablehq.com/@d3/Fradial-tidy-tree
-https://javadude.wordpress.com/2012/06/20/d3-js-from-tree-to-cluster-and-radial-projection/
-https://stackoverflow.com/questions/59783070/d3-v5-radial-tree-cluster
--->
 
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>D3.js Radial Tree Example</title>
-        <script src="https://d3js.org/d3.v6.min.js"></script>
-        <style>
-            svg {
-                border: solid 1px #ccc;
-            }
-            .link {
-                fill: none;
-                stroke: #ccc;
-                stroke-width: 1.5px;
-            }
-        </style>
-    </head>
-    <body>
- 
- 
-<script src="js/index.js"></script>
+
+<head>
+    <title>D3 Arbol radial</title>
+    <style>
+        body {
+            font-family: Sans-serif;
+            font-size: 11px;
+        }
+
+        .slice {
+            cursor: pointer;
+        }
+
+        .slice .main-arc {
+            stroke: #fff;
+            stroke-width: 1px;
+        }
+
+        .slice .hidden-arc {
+            fill: none;
+        }
+
+        .slice text {
+            pointer-events: none;
+            dominant-baseline: middle;
+            text-anchor: middle;
+        }
+    </style>
+
+    <script src='https://d3js.org/d3.v4.min.js'></script>
+</head>
+
+<body>
+
+
+    <script src="js/index.js"></script>
 </body>
+
 </html>

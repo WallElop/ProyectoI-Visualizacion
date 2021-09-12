@@ -1,164 +1,184 @@
-let root = {"name" : "A", "info" : "tst", "children" : [
-    {"name" : "A1", "children" : [
-            {"name" : "A12" },
-            {"name" : "A13" },
-            {"name" : "A14" },
-            {"name" : "A15" },
-            {"name" : "A16" }
-        ] },
-    {"name" : "A2", "children" : [
-            {"name" : "A21" },
-            {"name" : "A22", "children" : [
-            {"name" : "A221" },
-            {"name" : "A222" },
-            {"name" : "A223" },
-            {"name" : "A224" }
-        ]},
-            {"name" : "A23" },
-            {"name" : "A24" },
-            {"name" : "A25" }] },
-    {"name" : "A3", "children": [
-            {"name" : "A31", "children" :[
-                    {"name" : "A311" },
-                    {"name" : "A312" },
-                    {"name" : "A313" },
-                    {"name" : "A314" },
-                    {"name" : "A315" }
-                ]}] },
-                {"name" : "A1", "children" : [
-            {"name" : "A12" },
-            {"name" : "A13" },
-            {"name" : "A14" },
-            {"name" : "A15" },
-            {"name" : "A16" }
-        ] },
-    {"name" : "A2", "children" : [
-            {"name" : "A21" },
-            {"name" : "A22", "children" : [
-            {"name" : "A221" },
-            {"name" : "A222" },
-            {"name" : "A223" },
-            {"name" : "A224" }
-        ]},
-            {"name" : "A23" },
-            {"name" : "A24" },
-            {"name" : "A25" }] },
-    {"name" : "A3", "children": [
-            {"name" : "A31", "children" :[
-                    {"name" : "A311" },
-                    {"name" : "A312" },
-                    {"name" : "A313" },
-                    {"name" : "A314" },
-                    {"name" : "A315" }
-                ]}] },
-                {"name" : "A1", "children" : [
-            {"name" : "A12" },
-            {"name" : "A13" },
-            {"name" : "A14" },
-            {"name" : "A15" },
-            {"name" : "A16" }
-        ] },
-    {"name" : "A2", "children" : [
-            {"name" : "A21" },
-            {"name" : "A22", "children" : [
-            {"name" : "A221" },
-            {"name" : "A222" },
-            {"name" : "A223" },
-            {"name" : "A224" }
-        ]},
-            {"name" : "A23" },
-            {"name" : "A24" },
-            {"name" : "A25" }] },
-    {"name" : "A3", "children": [
-            {"name" : "A31", "children" :[
-                    {"name" : "A311" },
-                    {"name" : "A312" },
-                    {"name" : "A313" },
-                    {"name" : "A314" },
-                    {"name" : "A315" }
-                ]}] },
-                {"name" : "A1", "children" : [
-            {"name" : "matanga" },
-            {"name" : "dijo" },
-            {"name" : "la " },
-            {"name" : "changa" },
-            {"name" : "A16" }
-        ] },
-    {"name" : "A2", "children" : [
-            {"name" : "A21" },
-            {"name" : "A22", "children" : [
-            {"name" : "A221" },
-            {"name" : "A222" },
-            {"name" : "A223" },
-            {"name" : "A224" }
-        ]},
-            {"name" : "A23" },
-            {"name" : "A24" },
-            {"name" : "A25" }] },
-    {"name" : "A3", "children": [
-            {"name" : "A31", "children" :[
-                    {"name" : "A311" },
-                    {"name" : "A312" },
-                    {"name" : "A313" },
-                    {"name" : "A314" },
-                    {"name" : "A315" }
-                ]}] }
-]};
+const width = window.innerWidth,
+  height = window.innerHeight,
+  maxRadius = Math.min(width, height) / 2 - 5;
 
-let createRadialTree = function (input) {
-let height = 600;
-let width = 600;
+const formatNumber = d3.format(",d");
 
-let svg = d3.select('body')
-.append('svg')
-.attr('width', width)
-.attr('height', height);
+const x = d3
+  .scaleLinear()
+  .range([0, 2 * Math.PI])
+  .clamp(true);
 
-let diameter = height * 0.75;
-let radius = diameter / 2;
+const y = d3.scaleSqrt().range([maxRadius * 0.1, maxRadius]);
 
-let tree = d3.tree()
-.size([2*Math.PI, radius])
-.separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
+const color = d3.scaleOrdinal(d3.schemeCategory20);
 
-let data = d3.hierarchy(input)
+const partition = d3.partition();
 
-let treeData = tree(data);
+const arc = d3
+  .arc()
+  .startAngle((d) => x(d.x0))
+  .endAngle((d) => x(d.x1))
+  .innerRadius((d) => Math.max(0, y(d.y0)))
+  .outerRadius((d) => Math.max(0, y(d.y1)));
 
-let nodes = treeData.descendants();
-let links = treeData.links();
+const middleArcLine = (d) => {
+  const halfPi = Math.PI / 2;
+  const angles = [x(d.x0) - halfPi, x(d.x1) - halfPi];
+  const r = Math.max(0, (y(d.y0) + y(d.y1)) / 2);
 
-let graphGroup = svg.append('g')
-.attr('transform', "translate("+(width/2)+","+(height/2)+")");
+  const middleAngle = (angles[1] + angles[0]) / 2;
+  const invertDirection = middleAngle > 0 && middleAngle < Math.PI; // On lower quadrants write text ccw
+  if (invertDirection) {
+    angles.reverse();
+  }
 
-graphGroup.selectAll(".link")
-.data(links)
-.join("path")
-.attr("class", "link")
-.attr("d", d3.linkRadial()
-.angle(d => d.x)
-.radius(d => d.y));
-
-let node = graphGroup
-.selectAll(".node")
-.data(nodes)
-.join("g")
-.attr("class", "node")
-.attr("transform", function(d){
-return `rotate(${d.x * 180 / Math.PI - 90})` + `translate(${d.y}, 0)`;
-});
-
-
-node.append("circle").attr("r", 1);
-
-node.append("text")
-.attr("font-family", "sans-serif")
-.attr("font-size", 12)
-.attr("dx", function(d) { return d.x < Math.PI ? 8 : -8; })
-.attr("dy", ".31em")
-.attr("text-anchor", function(d) { return d.x < Math.PI ? "start" : "end"; })
-.attr("transform", function(d) { return d.x < Math.PI ? null : "rotate(180)"; })
-.text(function(d) { return d.data.name; });
+  const path = d3.path();
+  path.arc(0, 0, r, angles[0], angles[1], invertDirection);
+  return path.toString();
 };
 
-createRadialTree(root);
+const textFits = (d) => {
+  const CHAR_SPACE = 6;
+
+  const deltaAngle = x(d.x1) - x(d.x0);
+  const r = Math.max(0, (y(d.y0) + y(d.y1)) / 2);
+  const perimeter = r * deltaAngle;
+  return d.data.key.length * CHAR_SPACE < perimeter;
+  
+  
+};
+
+const svg = d3
+  .select("body")
+  .append("svg")
+  .style("width", "100vw")
+  .style("height", "100vh")
+  .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
+  .on("click", () => focusOn()); // Reset zoom on canvas click
+
+d3.csv("/../../Exports-2019.csv", (root) => {
+  root.forEach(function (d) {
+    d.TradeValue = +d.TradeValue;
+  });
+  var nest = d3
+    .nest()
+    .key(function (d) {
+      return d.HS2;
+    })
+    .key(function (d) {
+      return d.HS4;
+    })
+    .rollup(function (d) {
+      return d3.sum(d, function (d) {
+        return d.TradeValue;
+      });
+    });
+
+  var treemap = d3.treemap().size([width, height]).padding(1).round(true);
+  console.log(root);
+  root = d3
+    .hierarchy({key: "Exportaciones", values: nest.entries(root) }, function (d) {
+      return d.values;
+    })
+    .sum(function (d) {
+      return d.value;
+    })
+    .sort(function (a, b) {
+      return b.value - a.value;
+    });
+  treemap(root);
+
+  console.log(root);
+  const slice = svg.selectAll("g.slice").data(partition(root).descendants());
+
+  slice.exit().remove();
+
+  const newSlice = slice
+    .enter()
+    .append("g")
+    .attr("class", "slice")
+    .on("click", (d) => {
+      d3.event.stopPropagation();
+      focusOn(d);
+    });
+
+  newSlice
+    .append("title")
+    .text((d) => d.data.key + "\n" + formatNumber(d.value));
+
+  newSlice
+    .append("path")
+    .attr("class", "main-arc")
+    .style("fill", (d) => color((d.children ? d : d.parent).data.key))
+    .attr("d", arc);
+
+  newSlice
+    .append("path")
+    .attr("class", "hidden-arc")
+    .attr("id", (_, i) => `hiddenArc${i}`)
+    .attr("d", middleArcLine);
+
+  const text = newSlice
+    .append("text")
+    .attr("display", (d) => (textFits(d) ? null : "none"));
+
+  // Add white contour
+  text
+    .append("textPath")
+    .attr("startOffset", "50%")
+    .attr("xlink:href", (_, i) => `#hiddenArc${i}`)
+    .text((d) => d.data.key)
+    .style("fill", "none")
+    .style("stroke", "#fff")
+    .style("stroke-width", 5)
+    .style("stroke-linejoin", "round");
+
+  text
+    .append("textPath")
+    .attr("startOffset", "50%")
+    .attr("xlink:href", (_, i) => `#hiddenArc${i}`)
+    .text((d) => d.data.key);
+});
+
+function focusOn(d = { x0: 0, x1: 1, y0: 0, y1: 1 }) {
+  // Reset to top-level if no data point specified
+
+  const transition = svg
+    .transition()
+    .duration(750)
+    .tween("scale", () => {
+      const xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+        yd = d3.interpolate(y.domain(), [d.y0, 1]);
+      return (t) => {
+        x.domain(xd(t));
+        y.domain(yd(t));
+      };
+    });
+
+  transition.selectAll("path.main-arc").attrTween("d", (d) => () => arc(d));
+
+  transition
+    .selectAll("path.hidden-arc")
+    .attrTween("d", (d) => () => middleArcLine(d));
+
+  transition
+    .selectAll("text")
+    .attrTween("display", (d) => () => textFits(d) ? null : "none");
+
+  moveStackToFront(d);
+
+  //
+
+  function moveStackToFront(elD) {
+    svg
+      .selectAll(".slice")
+      .filter((d) => d === elD)
+      .each(function (d) {
+        this.parentNode.appendChild(this);
+        if (d.parent) {
+          moveStackToFront(d.parent);
+        }
+      });
+  }
+}
